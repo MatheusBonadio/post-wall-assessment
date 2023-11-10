@@ -13,6 +13,15 @@ export class UserController {
   async list(req: Request, res: Response) {
     const users = await userRepository.find({
       loadRelationIds: true,
+      select: [
+        'id',
+        'name',
+        'email',
+        'login',
+        'active',
+        'created_at',
+        'updated_at',
+      ],
     })
 
     return res.status(200).json(users)

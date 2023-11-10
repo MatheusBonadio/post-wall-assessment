@@ -4,31 +4,24 @@ import {
   Entity,
   CreateDateColumn,
   UpdateDateColumn,
+  ManyToOne,
+  JoinColumn,
   OneToMany,
 } from 'typeorm'
 
-import { Post } from './Post'
+import { User } from './User'
 import { Comment } from './Comment'
 
-@Entity('users')
-export class User {
+@Entity('posts')
+export class Post {
   @PrimaryGeneratedColumn('uuid')
   id: string
 
   @Column({ type: 'varchar', length: 100 })
-  name: string
-
-  @Column({ type: 'varchar', length: 191, unique: true })
-  email: string
-
-  @Column({ type: 'text', unique: true })
-  login: string
+  title: string
 
   @Column({ type: 'text' })
-  password: string
-
-  @Column({ type: 'boolean' })
-  active: boolean
+  description: string
 
   @CreateDateColumn({ type: 'timestamptz' })
   created_at: Date
@@ -36,9 +29,10 @@ export class User {
   @UpdateDateColumn({ type: 'timestamptz' })
   updated_at: Date
 
-  @OneToMany(() => Post, (post) => post.user)
-  posts: Post[]
-
-  @OneToMany(() => Comment, (comment) => comment.user)
+  @OneToMany(() => Comment, (comment) => comment.post)
   comments: Comment[]
+
+  @ManyToOne(() => User, (user) => user.posts, { nullable: false })
+  @JoinColumn({ name: 'user_id' })
+  user: User | string
 }

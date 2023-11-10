@@ -24,14 +24,14 @@ export const authMiddleware = async (
     process.env.JWT_PASS ?? '',
   ) as JwtPayload
 
-  const user = await userRepository.findOneBy({ id: user_id })
+  const user = await userRepository.findOne({
+    select: ['id', 'name', 'email', 'login', 'active'],
+    where: { id: user_id },
+  })
 
   if (!user) throw new UnauthorizedError('Sem autorização')
 
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const { password: _, ...loggedUser } = user
-
-  req.user = loggedUser
+  req.user = user
 
   next()
 }
