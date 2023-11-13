@@ -7,6 +7,7 @@ export class PostController {
   async list(req: Request, res: Response) {
     const posts = await postRepository.find({
       loadRelationIds: true,
+      order: { created_at: 'DESC' },
     })
 
     return res.status(200).json(posts)
@@ -68,5 +69,18 @@ export class PostController {
     await postRepository.delete(idPost)
 
     return res.status(204).send()
+  }
+
+  async find(req: Request, res: Response) {
+    const { idPost } = req.params
+
+    const post = await postRepository.findOne({
+      relations: { user: true, comments: { user: true } },
+      where: { id: idPost },
+    })
+
+    if (!post) throw new NotFoundError('O post não existe')
+
+    return res.status(200).json(post)
   }
 }

@@ -95,13 +95,13 @@ export class UserController {
   }
 
   async signIn(req: Request, res: Response) {
-    const { login, password } = req.body
+    const { email, password } = req.body
 
-    if (!login) throw new BadRequestError('O login é obrigatório')
+    if (!email) throw new BadRequestError('O email é obrigatório')
 
     if (!password) throw new BadRequestError('A senha é obrigatória')
 
-    const user = await userRepository.findOneBy({ login })
+    const user = await userRepository.findOneBy({ email })
 
     if (!user) throw new BadRequestError('Usuário ou senha incorretos')
 
@@ -121,14 +121,6 @@ export class UserController {
     return res.status(200).json({
       user: userLogin,
       token,
-    })
-  }
-
-  async signOut(req: Request, res: Response) {
-    // const { login, password } = req.body
-
-    return res.status(200).json({
-      message: 'Logout realizado com sucesso',
     })
   }
 }
