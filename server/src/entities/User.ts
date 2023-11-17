@@ -4,7 +4,11 @@ import {
   Entity,
   CreateDateColumn,
   UpdateDateColumn,
+  OneToMany,
 } from 'typeorm'
+
+import { Post } from './Post'
+import { Comment } from './Comment'
 
 @Entity('users')
 export class User {
@@ -17,9 +21,6 @@ export class User {
   @Column({ type: 'varchar', length: 191, unique: true })
   email: string
 
-  @Column({ type: 'text', unique: true })
-  login: string
-
   @Column({ type: 'text' })
   password: string
 
@@ -31,4 +32,10 @@ export class User {
 
   @UpdateDateColumn({ type: 'timestamptz' })
   updated_at: Date
+
+  @OneToMany(() => Post, (post) => post.user)
+  posts: Post[]
+
+  @OneToMany(() => Comment, (comment) => comment.user)
+  comments: Comment[]
 }
