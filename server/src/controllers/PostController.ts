@@ -6,15 +6,16 @@ import { postRepository } from '../repositories/postRepository'
 export class PostController {
   async list(req: Request, res: Response) {
     const posts = await postRepository.find({
-      loadRelationIds: true,
-      order: { created_at: 'DESC' },
+      select: { comments: { id: true }, user: { id: true, name: true } },
+      relations: { user: true, comments: true },
+      order: { updated_at: 'DESC' },
     })
 
     return res.status(200).json(posts)
   }
 
   async create(req: Request, res: Response) {
-    const { title, description } = req.body
+    const { title, description, image } = req.body
 
     if (!title) throw new BadRequestError('O título é obrigatório')
 
@@ -23,6 +24,7 @@ export class PostController {
     const newPost = postRepository.create({
       title,
       description,
+      image,
       user: req.user,
     })
 
@@ -32,22 +34,24 @@ export class PostController {
   }
 
   async update(req: Request, res: Response) {
-    const { title, description } = req.body
+    const { title, description, image } = req.body
     const { idPost } = req.params
 
     const post = await postRepository.findOne({
-      loadRelationIds: true,
+      relations: { user: true },
+      select: { user: { id: true } },
       where: { id: idPost },
     })
 
     if (!post) throw new NotFoundError('O post não existe')
 
-    if (post.user !== req.user.id)
+    if (post.user.id !== req.user.id)
       throw new BadRequestError('Você não tem permissão para editar esse post')
 
     await postRepository.update(idPost, {
       title,
       description,
+      image,
     })
 
     return res.status(204).send()
@@ -57,16 +61,42 @@ export class PostController {
     const { idPost } = req.params
 
     const post = await postRepository.findOne({
-      loadRelationIds: true,
+      relations: { user: true },
+      select: { user: { id: true } },
       where: { id: idPost },
     })
 
     if (!post) throw new NotFoundError('O post não existe')
 
-    if (post.user !== req.user.id)
+    if (post.user.id !== req.user.id)
       throw new BadRequestError('Você não tem permissão para deletar esse post')
 
-    await postRepository.delete(idPost)
+    await postRepository
+      .createQueryBuilder()
+      .softDelete()
+      .where('id = :id', { id: idPost })
+      .execute()
+
+    return res.status(204).send()
+  }
+
+  async restore(req: Request, res: Response) {
+    const { idPost } = req.params
+
+    if (!idPost) throw new BadRequestError('A postagem é obrigatória')
+
+    const post = await postRepository.findOne({
+      where: { id: idPost },
+      withDeleted: true,
+    })
+
+    if (!post) throw new NotFoundError('A postagem não existe')
+
+    await postRepository
+      .createQueryBuilder()
+      .restore()
+      .where('id = :id', { id: idPost })
+      .execute()
 
     return res.status(204).send()
   }
@@ -76,7 +106,12 @@ export class PostController {
 
     const post = await postRepository.findOne({
       relations: { user: true, comments: { user: true } },
+      select: {
+        user: { id: true, name: true },
+      },
       where: { id: idPost },
+      order: { comments: { created_at: 'DESC' } },
+      withDeleted: true,
     })
 
     if (!post) throw new NotFoundError('O post não existe')

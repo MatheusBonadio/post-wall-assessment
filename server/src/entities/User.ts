@@ -21,9 +21,6 @@ export class User {
   @Column({ type: 'varchar', length: 191, unique: true })
   email: string
 
-  @Column({ type: 'text', unique: true })
-  login: string
-
   @Column({ type: 'text' })
   password: string
 

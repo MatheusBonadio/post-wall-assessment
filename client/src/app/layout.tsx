@@ -1,13 +1,9 @@
 import type { Metadata } from 'next'
-import { Inter } from 'next/font/google'
-import Link from 'next/link'
-import { getServerSession } from 'next-auth'
 
 import NextAuthSessionProvider from '@/providers/SessionProvider'
-
-import { nextAuthOptions } from './api/auth/[...nextauth]/route'
-
-const inter = Inter({ subsets: ['latin'] })
+import StyledComponentsRegistry from '@/providers/StyledProvider'
+import { Header } from '@/components/Header'
+import GlobalStyle from '@/styles/GlobalStyle'
 
 export const metadata: Metadata = {
   title: 'Post wall',
@@ -19,35 +15,24 @@ export default async function RootLayout({
 }: {
   children: React.ReactNode
 }) {
-  const session = await getServerSession(nextAuthOptions)
-
   return (
-    <html lang="pt_br">
-      <body className={inter.className}>
-        <NextAuthSessionProvider>
-          <h1>Sistema: {session?.user.name}</h1>
-          <nav>
-            <ul>
-              <li>
-                <Link href="/">Home</Link>
-              </li>
-              {session && (
-                <li>
-                  <Link href="/posts/create">Criar post</Link>
-                </li>
-              )}
-              {!session && (
-                <li>
-                  <Link href="/login">Login</Link>
-                </li>
-              )}
-            </ul>
-          </nav>
-          <hr />
-
-          {children}
-        </NextAuthSessionProvider>
-      </body>
-    </html>
+    <NextAuthSessionProvider>
+      <StyledComponentsRegistry>
+        <GlobalStyle />
+        <html lang="pt_br">
+          <head>
+            <link rel="preconnect" href="https://fonts.gstatic.com"></link>
+            <link
+              href="http://fonts.googleapis.com/css?family=Roboto:400,100,300,500,700,900&display=swap"
+              rel="stylesheet"
+            />
+          </head>
+          <body>
+            <Header></Header>
+            <div style={{ marginLeft: '250px' }}>{children}</div>
+          </body>
+        </html>
+      </StyledComponentsRegistry>
+    </NextAuthSessionProvider>
   )
 }

@@ -41,13 +41,14 @@ export class CommentController {
     const { idComment } = req.params
 
     const comment = await commentRepository.findOne({
-      loadRelationIds: true,
+      relations: { user: true },
+      select: { user: { id: true } },
       where: { id: idComment },
     })
 
     if (!comment) throw new NotFoundError('O comentário não existe')
 
-    if (comment.user !== req.user.id)
+    if (comment.user.id !== req.user.id)
       throw new BadRequestError(
         'Você não tem permissão para editar esse comentário',
       )
@@ -63,19 +64,66 @@ export class CommentController {
     const { idComment } = req.params
 
     const comment = await commentRepository.findOne({
-      loadRelationIds: true,
+      relations: { post: { user: true }, user: true },
+      select: { user: { id: true }, post: { id: true, user: { id: true } } },
       where: { id: idComment },
     })
 
     if (!comment) throw new NotFoundError('O comentário não existe')
 
-    if (comment.user !== req.user.id && comment.post.user !== req.user.id)
+    if (comment.user.id !== req.user.id && comment.post.user.id !== req.user.id)
       throw new BadRequestError(
         'Você não tem permissão para deletar esse comentário',
       )
 
-    await commentRepository.delete(idComment)
+    await commentRepository
+      .createQueryBuilder()
+      .softDelete()
+      .where('id = :id', { id: idComment })
+      .execute()
+
+    await commentRepository.update(idComment, {
+      deleted_by: req.user.id,
+    })
 
     return res.status(204).send()
+  }
+
+  async restore(req: Request, res: Response) {
+    const { idComment } = req.params
+
+    if (!idComment) throw new BadRequestError('O comentário é obrigatório')
+
+    const comment = await commentRepository.findOne({
+      where: { id: idComment },
+      withDeleted: true,
+    })
+
+    if (!comment) throw new NotFoundError('O comentário não existe')
+
+    await commentRepository
+      .createQueryBuilder()
+      .restore()
+      .where('id = :id', { id: idComment })
+      .execute()
+
+    return res.status(204).send()
+  }
+
+  async find(req: Request, res: Response) {
+    const { idComment } = req.params
+
+    const comment = await commentRepository.findOne({
+      relations: { user: true, post: true },
+      select: {
+        user: { id: true },
+        post: { id: true, title: true },
+      },
+      where: { id: idComment },
+    })
+
+    if (!comment) throw new NotFoundError('O comentário não existe')
+
+    return res.status(200).json(comment)
   }
 }

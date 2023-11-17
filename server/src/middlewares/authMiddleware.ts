@@ -25,7 +25,7 @@ export const authMiddleware = async (
   ) as JwtPayload
 
   const user = await userRepository.findOne({
-    select: ['id', 'name', 'email', 'login', 'active'],
+    select: ['id', 'name', 'email', 'active', 'created_at', 'updated_at'],
     where: { id: user_id },
   })
 

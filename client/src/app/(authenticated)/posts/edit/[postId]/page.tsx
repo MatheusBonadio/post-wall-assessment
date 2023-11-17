@@ -1,27 +1,26 @@
+import { getServerSession } from 'next-auth'
+import { redirect } from 'next/navigation'
+
+import { nextAuthOptions } from '@/app/api/auth/[...nextauth]/route'
 import { api } from '@/app/api/services'
-import { Comment } from '@/models/CommentModel'
+
+import Form from './components/Form'
 
 export default async function PostsEditPage({
   params,
 }: {
   params: { postId: string }
 }) {
+  const session = await getServerSession(nextAuthOptions)
   const post = await api.findPostById(params.postId)
+
+  if (session?.user.id !== post.user.id) {
+    redirect('/login')
+  }
 
   return (
     <>
-      <h2>
-        Editar: {post.title} por {post.user.name}
-      </h2>
-      <span>{post.description}</span>
-      <h3>Comentários</h3>
-      {post.comments.map((comment: Comment) => (
-        <div key={comment.id}>
-          <span>
-            {comment.description} por {comment.user.name}
-          </span>
-        </div>
-      ))}
+      <Form post={post} token={session.user.token} />
     </>
   )
 }

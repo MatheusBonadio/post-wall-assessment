@@ -6,6 +6,7 @@ import {
   UpdateDateColumn,
   JoinColumn,
   ManyToOne,
+  DeleteDateColumn,
 } from 'typeorm'
 
 import { Post } from './Post'
@@ -19,11 +20,17 @@ export class Comment {
   @Column({ type: 'text' })
   description: string
 
+  @Column({ type: 'text', nullable: true })
+  deleted_by: string
+
   @CreateDateColumn({ type: 'timestamptz' })
   created_at: Date
 
   @UpdateDateColumn({ type: 'timestamptz' })
   updated_at: Date
+
+  @DeleteDateColumn({ type: 'timestamptz' })
+  deleted_at: Date
 
   @ManyToOne(() => Post, (post) => post.comments, { nullable: false })
   @JoinColumn({ name: 'post_id' })
@@ -31,5 +38,5 @@ export class Comment {
 
   @ManyToOne(() => User, (user) => user.comments, { nullable: false })
   @JoinColumn({ name: 'user_id' })
-  user: User | string
+  user: User
 }

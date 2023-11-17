@@ -13,34 +13,20 @@ export class UserController {
   async list(req: Request, res: Response) {
     const users = await userRepository.find({
       loadRelationIds: true,
-      select: [
-        'id',
-        'name',
-        'email',
-        'login',
-        'active',
-        'created_at',
-        'updated_at',
-      ],
+      select: ['id', 'name', 'email', 'active', 'created_at', 'updated_at'],
     })
 
     return res.status(200).json(users)
   }
 
   async create(req: Request, res: Response) {
-    const { name, email, login, password } = req.body
+    const { name, email, password } = req.body
 
     if (!name) throw new BadRequestError('O nome é obrigatório')
 
     if (!email) throw new BadRequestError('O email é obrigatório')
 
-    if (!login) throw new BadRequestError('O login é obrigatório')
-
     if (!password) throw new BadRequestError('A senha é obrigatória')
-
-    const loginExists = await userRepository.findOneBy({ login })
-
-    if (loginExists) throw new BadRequestError('O login já existe')
 
     const emailExists = await userRepository.findOneBy({ email })
 
@@ -51,7 +37,6 @@ export class UserController {
     const newUser = userRepository.create({
       name,
       email,
-      login,
       password: hashPassword,
       active: true,
     })
@@ -103,13 +88,13 @@ export class UserController {
 
     const user = await userRepository.findOneBy({ email })
 
-    if (!user) throw new BadRequestError('Usuário ou senha incorretos')
+    if (!user) throw new BadRequestError('Email ou senha incorretos')
 
     if (!user.active) throw new ForbiddenError('Usuário inativo')
 
     const checkPassword = await bcrypt.compare(password, user.password)
 
-    if (!checkPassword) throw new BadRequestError('Usuário ou senha incorretos')
+    if (!checkPassword) throw new BadRequestError('Email ou senha incorretos')
 
     const token = jwt.sign({ user_id: user.id }, process.env.JWT_PASS ?? '', {
       expiresIn: process.env.JWT_EXPIRES_IN ?? '30d',

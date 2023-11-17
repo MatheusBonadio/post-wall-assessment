@@ -1,6 +1,8 @@
 import axios from 'axios'
 
 import { Post } from '@/models/PostModel'
+import { User } from '@/models/UserModel'
+import { Comment } from '@/models/CommentModel'
 
 import { AuthData } from './auth/[...nextauth]/route'
 
@@ -17,63 +19,33 @@ async function signIn(email?: string, password?: string): Promise<AuthData> {
   return response.data
 }
 
-// async function updateDevice(device: Device, token: string): Promise<Device> {
-//   const response = await axiosInstance.patch<Device>(
-//     `/devices/${device.id}`,
-//     {
-//       os: device.os,
-//       model: device.model,
-//       name: device.name,
-//       push_token: device.push_token,
-//       user: device.user,
-//     },
-//     { headers: { Authorization: `Bearer ${token}` } },
-//   )
+async function createUser(user: User): Promise<User> {
+  const response = await axiosInstance.post<User>(`/users`, {
+    name: user.name,
+    email: user.email,
+    password: user.password,
+  })
 
-//   return response.data
-// }
+  return response.data
+}
 
-// async function deleteDevice(device: Device, token: string): Promise<Device> {
-//   const response = await axiosInstance.delete<Device>(`/devices/${device.id}`, {
-//     headers: { Authorization: `Bearer ${token}` },
-//   })
-
-//   return response.data
-// }
-
-// async function restoreDevice(device: Device, token: string): Promise<Device> {
-//   const response = await axiosInstance.patch<Device>(
-//     `/devices/${device.id}/restore`,
-//     {},
-//     { headers: { Authorization: `Bearer ${token}` } },
-//   )
-
-//   return response.data
-// }
-
-// async function findDevicesByPushToken(
-//   push_token: string,
-//   token: string,
-// ): Promise<Device[]> {
-//   const response = await axiosInstance.get<Device[]>(
-//     `/devices/pushToken/${push_token}`,
-//     {
-//       headers: { Authorization: `Bearer ${token}` },
-//     },
-//   )
-
-//   return response.data
-// }
-
-async function createPost(post: Post, token?: string): Promise<Post> {
-  const response = await axiosInstance.post<Post>(
-    `/posts`,
+async function updateUser(user: User, token?: string): Promise<User> {
+  const response = await axiosInstance.patch<User>(
+    `/users/${user.id}`,
     {
-      title: post.title,
-      description: post.description,
+      name: user.name,
+      email: user.email,
     },
     { headers: { Authorization: `Bearer ${token}` } },
   )
+
+  return response.data
+}
+
+async function getProfile(token?: string): Promise<User> {
+  const response = await axiosInstance.get<User>(`/users/profile`, {
+    headers: { Authorization: `Bearer ${token}` },
+  })
 
   return response.data
 }
@@ -84,70 +56,114 @@ async function getPosts(): Promise<Post[]> {
   return response.data
 }
 
+async function createPost(post: Post, token?: string): Promise<Post> {
+  const response = await axiosInstance.post<Post>(
+    `/posts`,
+    {
+      title: post.title,
+      description: post.description,
+      image: post.image,
+    },
+    { headers: { Authorization: `Bearer ${token}` } },
+  )
+
+  return response.data
+}
+
+async function updatePost(post: Post, token?: string): Promise<Post> {
+  const response = await axiosInstance.patch<Post>(
+    `/posts/${post.id}`,
+    {
+      title: post.title,
+      description: post.description,
+      image: post.image,
+    },
+    { headers: { Authorization: `Bearer ${token}` } },
+  )
+
+  return response.data
+}
+
+async function deletePost(postId: string, token?: string): Promise<Post> {
+  const response = await axiosInstance.delete<Post>(`/posts/${postId}`, {
+    headers: { Authorization: `Bearer ${token}` },
+  })
+
+  return response.data
+}
+
 async function findPostById(postId: string): Promise<Post> {
   const response = await axiosInstance.get<Post>(`/posts/${postId}`)
 
   return response.data
 }
 
-// async function getSolicitations(
-//   gate: Gate,
-//   token: string,
-// ): Promise<Solicitation[]> {
-//   const response = await axiosInstance.get<Solicitation[]>(
-//     `/gates/${gate.id}/solicitations`,
-//     {
-//       headers: { Authorization: `Bearer ${token}` },
-//       params: { limit: 10, offset: 0 },
-//     },
-//   )
+async function createComment(
+  postId: string,
+  comment: Comment,
+  token?: string,
+): Promise<Comment> {
+  const response = await axiosInstance.post<Comment>(
+    `/posts/${postId}/comments`,
+    {
+      description: comment.description,
+    },
+    { headers: { Authorization: `Bearer ${token}` } },
+  )
 
-//   return response.data
-// }
+  return response.data
+}
 
-// async function createSolicitation(
-//   gate: Gate,
-//   user: User,
-//   token: string,
-// ): Promise<Solicitation> {
-//   const response = await axiosInstance.post<Solicitation>(
-//     `/solicitations/${gate.id}/gate`,
-//     { message: 3, user_id: user.id },
-//     { headers: { Authorization: `Bearer ${token}` } },
-//   )
+async function updateComment(
+  comment: Comment,
+  token?: string,
+): Promise<Comment> {
+  const response = await axiosInstance.patch<Comment>(
+    `/comments/${comment.id}`,
+    {
+      description: comment.description,
+    },
+    { headers: { Authorization: `Bearer ${token}` } },
+  )
 
-//   return response.data
-// }
+  return response.data
+}
 
-// async function deleteSolicitation(
-//   solicitation: Solicitation | null,
-//   token: string,
-// ): Promise<Solicitation> {
-//   const response = await axiosInstance.delete<Solicitation>(
-//     `/solicitations/${solicitation?.id}`,
-//     { headers: { Authorization: `Bearer ${token}` } },
-//   )
+async function findCommentById(commentId: string): Promise<Comment> {
+  const response = await axiosInstance.get<Comment>(`/comments/${commentId}`)
 
-//   return response.data
-// }
+  return response.data
+}
+
+async function deleteComment(
+  commentId: string,
+  token?: string,
+): Promise<Comment> {
+  const response = await axiosInstance.delete<Comment>(
+    `/comments/${commentId}`,
+    {
+      headers: { Authorization: `Bearer ${token}` },
+    },
+  )
+
+  return response.data
+}
 
 export const api = {
   signIn,
 
-  createPost,
+  createUser,
+  updateUser,
+  getProfile,
+
   getPosts,
+  createPost,
+  updatePost,
+  deletePost,
   findPostById,
-  // signOut,
 
-  // createDevice,
-  // updateDevice,
-  // deleteDevice,
-  // restoreDevice,
-  // findDevicesByPushToken,
-
-  // getGates,
-
-  // getSolicitations,
-  // createSolicitation,
-  // deleteSolicitation,
+  createComment,
+  updateComment,
+  deleteComment,
+  findCommentById,
 }

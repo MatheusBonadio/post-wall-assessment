@@ -12,6 +12,7 @@ routes.post('/users', new UserController().create)
 routes.get('/posts', new PostController().list)
 routes.get('/comments', new CommentController().list)
 routes.get('/posts/:idPost', new PostController().find)
+routes.get('/comments/:idComment', new CommentController().find)
 
 routes.use(authMiddleware)
 
@@ -23,9 +24,11 @@ routes.get('/users/profile', new UserController().profile)
 routes.post('/posts', new PostController().create)
 routes.patch('/posts/:idPost', new PostController().update)
 routes.delete('/posts/:idPost', new PostController().delete)
+routes.post('/posts/:idPost/restore', new PostController().restore)
 
 routes.post('/posts/:idPost/comments', new CommentController().create)
 routes.patch('/comments/:idComment', new CommentController().update)
 routes.delete('/comments/:idComment', new CommentController().delete)
+routes.post('/comments/:idComment/restore', new CommentController().restore)
 
 export default routes
