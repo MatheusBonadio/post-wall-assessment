@@ -9,6 +9,10 @@
 
 O projeto consiste em uma aplicação web que simula um mural de postagens, onde o usuário pode criar, editar e excluir postagens, além de poder visualizar as postagens de outros usuários, também é possível escrever, editar e apagar comentários de acordo com a autoria.
 
+![alt text](https://i.imgur.com/7115RsH.png)
+
+![alt text](https://i.imgur.com/3KvzIwE.png)
+
 ## 🛠️ Tecnologias
 
 - **NodeJS**: Ambiente de execução Javascript server-side
